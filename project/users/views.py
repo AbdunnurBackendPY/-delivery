@@ -3,7 +3,7 @@ from rest_framework.response import Response
 from rest_framework import status
 from geopy.distance import geodesic
 
-COST_PER_KM = 5
+COST_PER_KM = 5.0  # Use a float value for more precise calculations
 
 @api_view(['POST'])
 def calculate_delivery_cost(request):
@@ -25,16 +25,16 @@ def calculate_delivery_cost(request):
             except ValueError:
                 raise ValueError(f"Invalid {key} coordinate")
 
-        # Calculate distance and cost
+        # Calculate distance and cost with higher precision
         point_a = (coordinates['latitude_a'], coordinates['longitude_a'])
         point_b = (coordinates['latitude_b'], coordinates['longitude_b'])
-        distance_km = geodesic(point_a, point_b).kilometers
-        total_cost_usd = distance_km * COST_PER_KM
+        distance_km = round(geodesic(point_a, point_b).kilometers, 6)  # Round to 6 decimal places
+        total_cost_usd = round(distance_km * COST_PER_KM, 2)  # Round to 2 decimal places
 
         # Return response
         return Response({
-            'distance_km': round(distance_km, 2),
-            'total_cost_usd': round(total_cost_usd, 2)
+            'distance_km': distance_km,
+            'total_cost_usd': total_cost_usd
         }, status=status.HTTP_200_OK)
 
     except ValueError as e:
